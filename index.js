@@ -7,8 +7,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.static('public'));
 
-// Hardcoded API key
-const apiKey = '765ff544a7378394b1434d6ca54ab24a';
+
 
 app.get('/generate', async (req, res) => {
     const prompt = req.query.prompt;
@@ -27,7 +26,7 @@ app.get('/generate', async (req, res) => {
         const response = await axios.post(apiUrl, payload, {
             headers: {
                 'Content-Type': 'application/json',
-                'xi-api-key': apiKey,
+                'xi-api-key': '765ff544a7378394b1434d6ca54ab24a',
             },
             responseType: 'stream',
         });
