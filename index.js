@@ -1,6 +1,5 @@
 const express = require('express');
 const axios = require('axios');
-const { promisify } = require('util');
 const { pipeline } = require('stream');
 
 const app = express();
@@ -8,45 +7,46 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.static('public'));
 
+// Hardcoded API key
+const apiKey = '765ff544a7378394b1434d6ca54ab24a';
+
 app.get('/generate', async (req, res) => {
-    const apiKey = req.query.key;
     const prompt = req.query.prompt;
 
-    if (!apiKey || !prompt) {
-        return res.status(400).json({ error: "API key and prompt are required." });
+    if (!prompt) {
+        return res.status(400).json({ error: "Prompt is required." });
     }
 
-    if (apiKey === "sudiptoisgay") {
-        try {
-            const payload = {
-                text: prompt,
-            };
+    try {
+        const payload = {
+            text: prompt,
+        };
 
-            const apiUrl = 'https://api.elevenlabs.io/v1/text-to-speech/zrHiDhphv9ZnVXBqCLjz';
-            const apiKey = 'e3bc9b24bf7240186872e8285125f85a';
+        const apiUrl = 'https://api.elevenlabs.io/v1/text-to-speech/zrHiDhphv9ZnVXBqCLjz';
 
-            const response = await axios.post(apiUrl, payload, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'xi-api-key': apiKey,
-                },
-                responseType: 'stream',
-            });
+        const response = await axios.post(apiUrl, payload, {
+            headers: {
+                'Content-Type': 'application/json',
+                'xi-api-key': apiKey,
+            },
+            responseType: 'stream',
+        });
 
-            res.setHeader('Content-Type', 'audio/mpeg');
+        res.setHeader('Content-Type', 'audio/mpeg');
 
-            // Pipe the audio stream directly to the response object
-            pipeline(response.data, res, (err) => {
-                if (err) {
-                    console.error('Pipeline failed', err);
-                    res.status(500).json({ error: "Failed to process audio stream." });
-                }
-            });
-        } catch (error) {
+        // Pipe the audio stream directly to the response object
+        pipeline(response.data, res, (err) => {
+            if (err) {
+                console.error('Pipeline failed', err);
+                res.status(500).json({ error: "Failed to process audio stream." });
+            }
+        });
+    } catch (error) {
+        if (error.response && error.response.status === 401) {
+            res.status(401).json({ error: "Access denied! Invalid API key." });
+        } else {
             res.status(500).json({ error: `Error processing response: ${error.message}` });
         }
-    } else {
-        res.status(401).json({ error: "Access denied! Invalid API key." });
     }
 });
 
